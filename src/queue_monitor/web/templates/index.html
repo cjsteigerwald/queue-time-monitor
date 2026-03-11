@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue Time Monitor</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body>
+    <header>
+        <h1>Queue Time Monitor</h1>
+        <nav>
+            <a href="/">Dashboard</a>
+            <a href="/configure">Configure</a>
+        </nav>
+    </header>
+
+    <div class="dashboard">
+        <div class="panel">
+            <h2>Live Feed</h2>
+            <img id="video-feed" alt="Video feed loading...">
+        </div>
+
+        <div class="panel">
+            <h2>Metrics</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value" id="count-value">--</div>
+                    <div class="metric-label">People in Queue</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="wait-value">--</div>
+                    <div class="metric-label">Est. Wait Time</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="mode-value">--</div>
+                    <div class="metric-label">Estimation Mode</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="service-value">--</div>
+                    <div class="metric-label">Service Time</div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="metrics-chart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <span><span class="status-dot disconnected" id="video-status"></span>Video</span>
+        <span><span class="status-dot disconnected" id="metrics-status"></span>Metrics</span>
+    </div>
+
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

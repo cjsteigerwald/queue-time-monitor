@@ -1,0 +1,133 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #1a1a2e;
+    color: #eee;
+    min-height: 100vh;
+}
+
+header {
+    background: #16213e;
+    padding: 1rem 2rem;
+    border-bottom: 2px solid #0f3460;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    font-size: 1.4rem;
+    color: #e94560;
+}
+
+header nav a {
+    color: #aaa;
+    text-decoration: none;
+    margin-left: 1.5rem;
+    font-size: 0.9rem;
+}
+
+header nav a:hover {
+    color: #e94560;
+}
+
+.dashboard {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.panel {
+    background: #16213e;
+    border-radius: 8px;
+    padding: 1.2rem;
+    border: 1px solid #0f3460;
+}
+
+.panel h2 {
+    font-size: 1rem;
+    color: #aaa;
+    margin-bottom: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+#video-feed {
+    width: 100%;
+    border-radius: 4px;
+    background: #000;
+    aspect-ratio: 16/9;
+    object-fit: contain;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.metric-card {
+    background: #1a1a2e;
+    border-radius: 6px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.metric-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #e94560;
+    line-height: 1;
+}
+
+.metric-label {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 0.3rem;
+}
+
+.chart-container {
+    position: relative;
+    height: 250px;
+}
+
+.status-bar {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0.8rem 2rem;
+    background: #16213e;
+    border-top: 1px solid #0f3460;
+    font-size: 0.8rem;
+    color: #888;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+.status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+    background: #4caf50;
+}
+
+.status-dot.disconnected {
+    background: #e94560;
+}
+
+@media (max-width: 900px) {
+    .dashboard {
+        grid-template-columns: 1fr;
+    }
+}

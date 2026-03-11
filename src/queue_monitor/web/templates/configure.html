@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configure Zones - Queue Time Monitor</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Queue Time Monitor</h1>
+        <nav>
+            <a href="/">Dashboard</a>
+            <a href="/configure">Configure</a>
+        </nav>
+    </header>
+
+    <div class="dashboard">
+        <div class="panel" style="grid-column: 1 / -1;">
+            <h2>Zone Configuration</h2>
+            <p style="color: #888; margin-bottom: 1rem;">
+                Use the CLI command to configure queue zones interactively:
+            </p>
+            <pre style="background: #1a1a2e; padding: 1rem; border-radius: 4px; color: #4caf50;">
+python -m queue_monitor configure --source your_video.mp4</pre>
+            <p style="color: #888; margin-top: 1rem;">
+                Click on the video frame to define polygon vertices for the queue area.
+                Press Enter to save, R to reset, Q to quit.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

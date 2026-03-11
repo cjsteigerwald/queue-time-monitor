@@ -1,0 +1,29 @@
+video:
+  source: "0"  # webcam index or file path or RTSP URL
+  width: 1280
+  height: 720
+  fps: 30
+
+detection:
+  model: "yolov8n.pt"
+  confidence: 0.35
+  device: ""  # empty = auto (CUDA if available, else CPU)
+
+zones:
+  - name: "main_queue"
+    polygon: []  # list of [x, y] points — use 'configure' command to set
+    num_servers: 1
+    service_time: 30.0  # seconds per person (static mode fallback)
+
+estimation:
+  mode: "adaptive"  # "static" or "adaptive"
+  ema_alpha: 0.3
+  departure_window: 20  # number of recent departures for rolling average
+
+storage:
+  database: "queue_monitor.db"
+  snapshot_interval: 10  # seconds between metric snapshots
+
+web:
+  host: "0.0.0.0"
+  port: 8000
