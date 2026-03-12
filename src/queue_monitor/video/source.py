@@ -101,5 +101,12 @@ class VideoSource:
     def __next__(self) -> np.ndarray:
         ret, frame = self.read()
         if not ret or frame is None:
+            # Loop file-based sources by releasing and reopening
+            if self._cap is not None and isinstance(self._source, str) and not self._source.startswith("rtsp"):
+                self._cap.release()
+                self._cap = cv2.VideoCapture(self._source)
+                ret, frame = self._cap.read()
+                if ret and frame is not None:
+                    return frame
             raise StopIteration
         return frame

@@ -133,8 +133,39 @@ function connectMetricsWs() {
     };
 }
 
+function updatePauseUI(paused) {
+    const btn = document.getElementById("pause-btn");
+    const dot = document.getElementById("pipeline-status");
+    btn.textContent = paused ? "Resume" : "Pause";
+    btn.classList.toggle("paused", paused);
+    dot.classList.toggle("disconnected", paused);
+}
+
+async function togglePipeline() {
+    try {
+        const resp = await fetch("/api/pipeline/toggle", { method: "POST" });
+        const data = await resp.json();
+        updatePauseUI(data.paused);
+    } catch (err) {
+        console.error("Failed to toggle pipeline:", err);
+    }
+}
+
+async function fetchPipelineStatus() {
+    try {
+        const resp = await fetch("/api/pipeline/status");
+        const data = await resp.json();
+        updatePauseUI(data.paused);
+    } catch (err) {
+        console.error("Failed to fetch pipeline status:", err);
+    }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     initChart();
     connectVideoWs();
     connectMetricsWs();
+    fetchPipelineStatus();
+    // Poll pipeline status every 2s so the button reflects external changes
+    setInterval(fetchPipelineStatus, 2000);
 });

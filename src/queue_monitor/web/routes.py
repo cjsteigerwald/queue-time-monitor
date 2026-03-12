@@ -60,12 +60,15 @@ def create_router(
     async def configure_page(request: Request):
         return templates.TemplateResponse("configure.html", {"request": request})
 
+    def _is_paused() -> bool:
+        return pipeline is not None and pipeline.is_paused
+
     @router.websocket("/ws/video")
     async def ws_video(websocket: WebSocket):
         await websocket.accept()
         try:
             while True:
-                if _latest_frame["data"] is not None:
+                if not _is_paused() and _latest_frame["data"] is not None:
                     await websocket.send_bytes(_latest_frame["data"])
                 await asyncio.sleep(0.033)  # ~30 FPS
         except WebSocketDisconnect:
@@ -76,11 +79,24 @@ def create_router(
         await websocket.accept()
         try:
             while True:
-                if _latest_metrics["data"] is not None:
+                if not _is_paused() and _latest_metrics["data"] is not None:
                     await websocket.send_text(json.dumps(_latest_metrics["data"]))
                 await asyncio.sleep(1.0)
         except WebSocketDisconnect:
             pass
+
+    @router.post("/api/pipeline/toggle")
+    async def toggle_pipeline():
+        if pipeline is None:
+            return {"error": "No pipeline available", "paused": False}
+        paused = pipeline.toggle_pause()
+        return {"paused": paused}
+
+    @router.get("/api/pipeline/status")
+    async def pipeline_status():
+        if pipeline is None:
+            return {"paused": False, "running": False}
+        return {"paused": pipeline.is_paused, "running": pipeline.is_running}
 
     @router.get("/api/history")
     async def get_history(

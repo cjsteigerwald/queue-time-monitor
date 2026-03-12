@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import signal
+import threading
 import time
 from dataclasses import dataclass, field
 
@@ -61,6 +62,8 @@ class Pipeline:
     def __init__(self, config: AppConfig):
         self._config = config
         self._running = False
+        self._paused = threading.Event()  # unset = not paused
+        self._pause_lock = threading.Lock()
         self._source = VideoSource(config.video)
         self._detector = PersonDetector(config.detection)
         self._db = MetricsDatabase(config.storage.database)
@@ -90,6 +93,29 @@ class Pipeline:
             self._zones.append(ZoneState(
                 zone=zone, tracker=tracker, counter=counter, estimator=estimator,
             ))
+
+    @property
+    def is_running(self) -> bool:
+        return self._running
+
+    @property
+    def is_paused(self) -> bool:
+        return self._paused.is_set()
+
+    def pause(self) -> None:
+        self._paused.set()
+
+    def resume(self) -> None:
+        self._paused.clear()
+
+    def toggle_pause(self) -> bool:
+        """Toggle paused state. Returns the new paused state."""
+        with self._pause_lock:
+            if self._paused.is_set():
+                self._paused.clear()
+            else:
+                self._paused.set()
+            return self._paused.is_set()
 
     def on_frame(self, callback) -> None:
         self._frame_callbacks.append(callback)
@@ -188,6 +214,10 @@ class Pipeline:
             for frame in self._source:
                 if not self._running:
                     break
+
+                if self._paused.is_set():
+                    time.sleep(0.1)
+                    continue
 
                 t0 = time.monotonic()
                 result = self.process_frame(frame)
