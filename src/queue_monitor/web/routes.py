@@ -106,8 +106,19 @@ def create_router(
     @router.get("/api/pipeline/status")
     async def pipeline_status():
         if pipeline is None:
-            return {"paused": False, "running": False}
-        return {"paused": pipeline.is_paused, "running": pipeline.is_running}
+            return {"paused": False, "running": False, "error": None}
+        error = pipeline.error
+        return {
+            "paused": pipeline.is_paused,
+            "running": pipeline.is_running,
+            "error": {
+                "message": error.message,
+                "traceback": error.traceback,
+                "timestamp": error.timestamp,
+            }
+            if error
+            else None,
+        }
 
     @router.get("/api/history")
     async def get_history(

@@ -50,6 +50,7 @@ def test_status_endpoint():
     pipeline = MagicMock()
     type(pipeline).is_paused = PropertyMock(return_value=False)
     type(pipeline).is_running = PropertyMock(return_value=True)
+    type(pipeline).error = PropertyMock(return_value=None)
     app = _make_app(pipeline=pipeline)
     client = TestClient(app)
 
@@ -58,6 +59,7 @@ def test_status_endpoint():
     data = resp.json()
     assert data["paused"] is False
     assert data["running"] is True
+    assert data["error"] is None
 
 
 def test_toggle_without_pipeline():
@@ -79,6 +81,31 @@ def test_status_without_pipeline():
     data = resp.json()
     assert data["paused"] is False
     assert data["running"] is False
+    assert data["error"] is None
+
+
+def test_status_endpoint_with_error():
+    pipeline = MagicMock()
+    type(pipeline).is_paused = PropertyMock(return_value=False)
+    type(pipeline).is_running = PropertyMock(return_value=False)
+
+    mock_error = MagicMock()
+    mock_error.message = "source failed"
+    mock_error.traceback = "Traceback ...\nRuntimeError: source failed"
+    mock_error.timestamp = "2026-03-12T00:00:00+00:00"
+    type(pipeline).error = PropertyMock(return_value=mock_error)
+
+    app = _make_app(pipeline=pipeline)
+    client = TestClient(app)
+
+    resp = client.get("/api/pipeline/status")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["running"] is False
+    assert data["error"] is not None
+    assert data["error"]["message"] == "source failed"
+    assert data["error"]["timestamp"] == "2026-03-12T00:00:00+00:00"
+    assert "traceback" in data["error"]
 
 
 def _make_metric(
