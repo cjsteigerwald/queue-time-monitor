@@ -1,5 +1,6 @@
 """Tests for the processing pipeline (integration-style with mocks)."""
 
+import threading
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -155,3 +156,56 @@ def test_run_stores_error_on_crash(mock_detector_cls, tmp_path):
     assert pipeline.error is not None
     assert pipeline.error.message == "source failed"
     assert not pipeline.is_running
+
+
+@patch("queue_monitor.pipeline.PersonDetector")
+def test_run_registers_signals_in_main_thread(mock_detector_cls, tmp_path):
+    """Signal handlers are registered when running on the main thread."""
+    config = AppConfig()
+    config.storage.database = str(tmp_path / "test.db")
+    mock_detector_cls.return_value = MagicMock()
+
+    pipeline = Pipeline(config)
+
+    mock_source = MagicMock()
+    mock_source.open.return_value = None
+    mock_source.frame_size = (1280, 720)
+    mock_source.fps = 30
+    mock_source.__iter__ = MagicMock(return_value=iter([]))
+    pipeline._source = mock_source
+
+    with patch("queue_monitor.pipeline.signal.signal") as mock_signal:
+        pipeline.run()
+        assert mock_signal.call_count == 2
+
+
+@patch("queue_monitor.pipeline.PersonDetector")
+def test_run_skips_signals_in_non_main_thread(mock_detector_cls, tmp_path):
+    """Signal handlers are skipped (with log) when not on the main thread."""
+    config = AppConfig()
+    config.storage.database = str(tmp_path / "test.db")
+    mock_detector_cls.return_value = MagicMock()
+
+    pipeline = Pipeline(config)
+
+    mock_source = MagicMock()
+    mock_source.open.return_value = None
+    mock_source.frame_size = (1280, 720)
+    mock_source.fps = 30
+    mock_source.__iter__ = MagicMock(return_value=iter([]))
+    pipeline._source = mock_source
+
+    errors = []
+
+    def run_in_thread():
+        try:
+            with patch("queue_monitor.pipeline.signal.signal") as mock_signal:
+                pipeline.run()
+                assert mock_signal.call_count == 0
+        except AssertionError as e:
+            errors.append(e)
+
+    t = threading.Thread(target=run_in_thread)
+    t.start()
+    t.join(timeout=5)
+    assert not errors, f"Thread raised: {errors}"
