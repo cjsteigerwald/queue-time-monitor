@@ -3,8 +3,8 @@
 from unittest.mock import MagicMock, PropertyMock
 
 from fastapi import FastAPI
-from fastapi.testclient import TestClient
 from fastapi.templating import Jinja2Templates
+from fastapi.testclient import TestClient
 
 from queue_monitor.web.routes import create_router
 
