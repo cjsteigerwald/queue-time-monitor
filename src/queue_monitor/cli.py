@@ -18,7 +18,10 @@ app = typer.Typer(
 @app.command()
 def run(
     source: Optional[str] = typer.Option(
-        None, "--source", "-s", help="Video source (file/webcam/RTSP)",
+        None,
+        "--source",
+        "-s",
+        help="Video source (file/webcam/RTSP)",
     ),
     config: Path = typer.Option(DEFAULT_CONFIG, "--config", "-c", help="Path to config YAML"),
     show: bool = typer.Option(False, "--show", help="Show OpenCV window with annotated frames"),
@@ -56,6 +59,7 @@ def _run_with_web(cfg, show: bool) -> None:
             pipeline.run(show_window=show)
         except Exception:
             import traceback
+
             traceback.print_exc()
 
     pipeline_thread = threading.Thread(target=_run_pipeline, daemon=True)
@@ -67,13 +71,22 @@ def _run_with_web(cfg, show: bool) -> None:
 @app.command()
 def configure(
     source: Optional[str] = typer.Option(
-        None, "--source", "-s", help="Video source to configure zones on",
+        None,
+        "--source",
+        "-s",
+        help="Video source to configure zones on",
     ),
     config: Path = typer.Option(
-        DEFAULT_CONFIG, "--config", "-c", help="Path to config YAML",
+        DEFAULT_CONFIG,
+        "--config",
+        "-c",
+        help="Path to config YAML",
     ),
     zone_name: str = typer.Option(
-        "main_queue", "--zone", "-z", help="Zone name to configure",
+        "main_queue",
+        "--zone",
+        "-z",
+        help="Zone name to configure",
     ),
 ) -> None:
     """Open an interactive window to define queue zone polygons."""
@@ -141,6 +154,7 @@ def configure(
 
     if not zone_found:
         from queue_monitor.config import ZoneConfig
+
         cfg.zones.append(ZoneConfig(name=zone_name, polygon=points))
 
     save_config(cfg, config)
