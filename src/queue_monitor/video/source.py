@@ -32,6 +32,7 @@ class VideoSource:
 
     def open(self) -> None:
         """Open the video source."""
+        self.release()
         self._cap = cv2.VideoCapture(self._source)
         if isinstance(self._source, int):
             self._cap.set(cv2.CAP_PROP_FRAME_WIDTH, self._config.width)

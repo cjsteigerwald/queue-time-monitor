@@ -229,3 +229,22 @@ def test_iterator_stops_on_failure(mock_cv2):
     vs.open()
     frames = list(vs)
     assert frames == []
+
+
+@patch("queue_monitor.video.source.cv2")
+def test_open_releases_previous_capture(mock_cv2):
+    from queue_monitor.video.source import VideoSource
+
+    first_cap = MagicMock()
+    first_cap.isOpened.return_value = True
+    second_cap = MagicMock()
+    second_cap.isOpened.return_value = True
+    mock_cv2.VideoCapture.side_effect = [first_cap, second_cap]
+
+    vs = VideoSource(VideoConfig(source="video.mp4"))
+    vs.open()
+    assert vs._cap is first_cap
+
+    vs.open()
+    first_cap.release.assert_called_once()
+    assert vs._cap is second_cap
