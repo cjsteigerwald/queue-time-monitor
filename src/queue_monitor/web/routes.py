@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import threading
 import time
 from typing import TYPE_CHECKING
 
@@ -29,15 +30,18 @@ def create_router(
     # Shared state for WebSocket broadcasting
     _latest_frame: dict = {"data": None}
     _latest_metrics: dict = {"data": None}
+    _state_lock = threading.Lock()
 
     if pipeline is not None:
 
         def on_frame(frame):
             _, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 70])
-            _latest_frame["data"] = buf.tobytes()
+            data = buf.tobytes()
+            with _state_lock:
+                _latest_frame["data"] = data
 
         def on_metrics(metrics_list):
-            _latest_metrics["data"] = [
+            payload = [
                 {
                     "zone_name": m.zone_name,
                     "raw_count": m.raw_count,
@@ -49,6 +53,8 @@ def create_router(
                 }
                 for m in metrics_list
             ]
+            with _state_lock:
+                _latest_metrics["data"] = payload
 
         pipeline.on_frame(on_frame)
         pipeline.on_metrics(on_metrics)
@@ -69,8 +75,10 @@ def create_router(
         await websocket.accept()
         try:
             while True:
-                if not _is_paused() and _latest_frame["data"] is not None:
-                    await websocket.send_bytes(_latest_frame["data"])
+                with _state_lock:
+                    frame_data = _latest_frame["data"]
+                if not _is_paused() and frame_data is not None:
+                    await websocket.send_bytes(frame_data)
                 await asyncio.sleep(0.033)  # ~30 FPS
         except WebSocketDisconnect:
             pass
@@ -80,8 +88,10 @@ def create_router(
         await websocket.accept()
         try:
             while True:
-                if not _is_paused() and _latest_metrics["data"] is not None:
-                    await websocket.send_text(json.dumps(_latest_metrics["data"]))
+                with _state_lock:
+                    metrics_data = _latest_metrics["data"]
+                if not _is_paused() and metrics_data is not None:
+                    await websocket.send_text(json.dumps(metrics_data))
                 await asyncio.sleep(1.0)
         except WebSocketDisconnect:
             pass
