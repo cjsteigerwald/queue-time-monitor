@@ -82,6 +82,19 @@ def create_router(
         except WebSocketDisconnect:
             pass
 
+    @router.post("/api/pipeline/toggle")
+    async def toggle_pipeline():
+        if pipeline is None:
+            return {"error": "No pipeline available", "paused": False}
+        paused = pipeline.toggle_pause()
+        return {"paused": paused}
+
+    @router.get("/api/pipeline/status")
+    async def pipeline_status():
+        if pipeline is None:
+            return {"paused": False, "running": False}
+        return {"paused": pipeline.is_paused, "running": pipeline.is_running}
+
     @router.get("/api/history")
     async def get_history(
         zone: str | None = Query(None),

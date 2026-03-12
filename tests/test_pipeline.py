@@ -68,3 +68,35 @@ def test_process_frame_empty(mock_detector_cls, tmp_path):
     assert result.metrics[0].wait_time == 0.0
 
     pipeline._db.close()
+
+
+@patch("queue_monitor.pipeline.PersonDetector")
+def test_pause_and_resume(mock_detector_cls, tmp_path):
+    config = AppConfig()
+    config.storage.database = str(tmp_path / "test.db")
+    mock_detector_cls.return_value = MagicMock()
+
+    pipeline = Pipeline(config)
+
+    assert not pipeline.is_paused
+    pipeline.pause()
+    assert pipeline.is_paused
+    pipeline.resume()
+    assert not pipeline.is_paused
+
+
+@patch("queue_monitor.pipeline.PersonDetector")
+def test_toggle_pause(mock_detector_cls, tmp_path):
+    config = AppConfig()
+    config.storage.database = str(tmp_path / "test.db")
+    mock_detector_cls.return_value = MagicMock()
+
+    pipeline = Pipeline(config)
+
+    assert not pipeline.is_paused
+    result = pipeline.toggle_pause()
+    assert result is True
+    assert pipeline.is_paused
+    result = pipeline.toggle_pause()
+    assert result is False
+    assert not pipeline.is_paused

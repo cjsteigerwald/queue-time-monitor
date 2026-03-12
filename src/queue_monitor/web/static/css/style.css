@@ -60,6 +60,38 @@ header nav a:hover {
     letter-spacing: 0.05em;
 }
 
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+}
+
+.panel-header h2 {
+    margin-bottom: 0;
+}
+
+.pause-btn {
+    background: #0f3460;
+    color: #eee;
+    border: 1px solid #e94560;
+    border-radius: 4px;
+    padding: 0.35rem 1rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.pause-btn:hover {
+    background: #e94560;
+    color: #fff;
+}
+
+.pause-btn.paused {
+    background: #e94560;
+    color: #fff;
+}
+
 #video-feed {
     width: 100%;
     border-radius: 4px;
