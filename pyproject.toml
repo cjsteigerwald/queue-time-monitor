@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68.0", "setuptools-scm>=8.0"]
+requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -27,6 +27,8 @@ dev = [
     "pytest-asyncio>=0.23.0",
     "httpx>=0.25.0",
     "ruff>=0.1.0",
+    "commitizen>=3.0",
+    "pre-commit>=3.0",
 ]
 
 [project.scripts]
@@ -45,3 +47,13 @@ select = ["E", "F", "I", "W"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.1.0"
+version_files = [
+    "pyproject.toml:version",
+    "src/queue_monitor/__init__.py:__version__",
+]
+tag_format = "v$version"
+update_changelog_on_bump = true
