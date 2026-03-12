@@ -166,4 +166,6 @@ document.addEventListener("DOMContentLoaded", () => {
     connectVideoWs();
     connectMetricsWs();
     fetchPipelineStatus();
+    // Poll pipeline status every 2s so the button reflects external changes
+    setInterval(fetchPipelineStatus, 2000);
 });

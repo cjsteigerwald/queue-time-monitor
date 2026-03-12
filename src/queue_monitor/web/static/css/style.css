@@ -61,35 +61,42 @@ header nav a:hover {
 }
 
 .panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
     margin-bottom: 0.8rem;
 }
 
 .panel-header h2 {
-    margin-bottom: 0;
+    margin-bottom: 0 !important;
 }
 
 .pause-btn {
     background: #0f3460;
     color: #eee;
-    border: 1px solid #e94560;
-    border-radius: 4px;
-    padding: 0.35rem 1rem;
-    font-size: 0.8rem;
+    border: 2px solid #e94560;
+    border-radius: 6px;
+    padding: 0.5rem 1.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
     cursor: pointer;
-    transition: background 0.2s, color 0.2s;
+    transition: background 0.2s, color 0.2s, transform 0.1s;
+    flex-shrink: 0;
 }
 
 .pause-btn:hover {
     background: #e94560;
     color: #fff;
+    transform: scale(1.05);
 }
 
 .pause-btn.paused {
     background: #e94560;
     color: #fff;
+    border-color: #e94560;
 }
 
 #video-feed {
