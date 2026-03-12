@@ -1,6 +1,6 @@
 """Tests for video source abstraction (mocked cv2 to avoid needing a camera)."""
 
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest

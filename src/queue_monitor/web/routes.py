@@ -31,6 +31,7 @@ def create_router(
     _latest_metrics: dict = {"data": None}
 
     if pipeline is not None:
+
         def on_frame(frame):
             _, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 70])
             _latest_frame["data"] = buf.tobytes()

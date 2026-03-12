@@ -21,9 +21,7 @@ def _detections_at(centers: list[tuple[int, int]], size: int = 50) -> sv.Detecti
 
 
 def test_zone_filters_inside():
-    config = ZoneConfig(
-        name="test", polygon=[[200, 200], [400, 200], [400, 400], [200, 400]]
-    )
+    config = ZoneConfig(name="test", polygon=[[200, 200], [400, 200], [400, 400], [200, 400]])
     zone = QueueZone(config, (640, 480))
 
     # One inside (300, 300), one outside (50, 50)
@@ -46,8 +44,10 @@ def test_zone_empty_polygon_uses_full_frame():
 
 def test_zone_properties():
     config = ZoneConfig(
-        name="main", polygon=[[0, 0], [100, 0], [100, 100]],
-        num_servers=3, service_time=20.0,
+        name="main",
+        polygon=[[0, 0], [100, 0], [100, 100]],
+        num_servers=3,
+        service_time=20.0,
     )
     zone = QueueZone(config, (640, 480))
 

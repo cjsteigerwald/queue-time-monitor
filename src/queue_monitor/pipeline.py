@@ -90,9 +90,14 @@ class Pipeline:
                 num_servers=zone_cfg.num_servers,
                 departure_window=self._config.estimation.departure_window,
             )
-            self._zones.append(ZoneState(
-                zone=zone, tracker=tracker, counter=counter, estimator=estimator,
-            ))
+            self._zones.append(
+                ZoneState(
+                    zone=zone,
+                    tracker=tracker,
+                    counter=counter,
+                    estimator=estimator,
+                )
+            )
 
     @property
     def is_running(self) -> bool:
@@ -170,8 +175,15 @@ class Pipeline:
 
             # Draw metrics overlay
             text = f"{zs.zone.name}: {zs.counter.count_rounded} people | ~{wait_time:.0f}s wait"
-            cv2.putText(annotated, text, (10, 30 + 40 * self._zones.index(zs)),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+            cv2.putText(
+                annotated,
+                text,
+                (10, 30 + 40 * self._zones.index(zs)),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.8,
+                (0, 255, 0),
+                2,
+            )
 
             # Snapshot to DB
             if now - zs.last_snapshot >= self._config.storage.snapshot_interval:

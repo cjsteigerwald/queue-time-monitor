@@ -102,7 +102,8 @@ class VideoSource:
         ret, frame = self.read()
         if not ret or frame is None:
             # Loop file-based sources by releasing and reopening
-            if self._cap is not None and isinstance(self._source, str) and not self._source.startswith("rtsp"):
+            is_file = isinstance(self._source, str) and not self._source.startswith("rtsp")
+            if self._cap is not None and is_file:
                 self._cap.release()
                 self._cap = cv2.VideoCapture(self._source)
                 ret, frame = self._cap.read()
