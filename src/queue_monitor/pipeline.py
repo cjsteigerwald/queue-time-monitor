@@ -167,8 +167,11 @@ class Pipeline:
     def run(self, show_window: bool = False) -> None:
         """Run the main processing loop."""
         self._running = True
-        signal.signal(signal.SIGINT, self._handle_signal)
-        signal.signal(signal.SIGTERM, self._handle_signal)
+        try:
+            signal.signal(signal.SIGINT, self._handle_signal)
+            signal.signal(signal.SIGTERM, self._handle_signal)
+        except ValueError:
+            pass  # Not in main thread (e.g., --web mode)
 
         self._source.open()
         self._db.open()

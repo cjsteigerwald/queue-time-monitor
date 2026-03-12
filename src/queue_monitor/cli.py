@@ -51,11 +51,14 @@ def _run_with_web(cfg, show: bool) -> None:
     web_app = create_app(pipeline, cfg)
 
     # Run pipeline in background thread
-    pipeline_thread = threading.Thread(
-        target=pipeline.run,
-        kwargs={"show_window": show},
-        daemon=True,
-    )
+    def _run_pipeline():
+        try:
+            pipeline.run(show_window=show)
+        except Exception:
+            import traceback
+            traceback.print_exc()
+
+    pipeline_thread = threading.Thread(target=_run_pipeline, daemon=True)
     pipeline_thread.start()
 
     uvicorn.run(web_app, host=cfg.web.host, port=cfg.web.port)
