@@ -3,6 +3,7 @@
 from unittest.mock import MagicMock, patch
 
 import numpy as np
+import pytest
 import supervision as sv
 
 from queue_monitor.config import AppConfig, ZoneConfig
@@ -100,3 +101,57 @@ def test_toggle_pause(mock_detector_cls, tmp_path):
     result = pipeline.toggle_pause()
     assert result is False
     assert not pipeline.is_paused
+
+
+@patch("queue_monitor.pipeline.PersonDetector")
+def test_error_initially_none(mock_detector_cls, tmp_path):
+    config = AppConfig()
+    config.storage.database = str(tmp_path / "test.db")
+    mock_detector_cls.return_value = MagicMock()
+
+    pipeline = Pipeline(config)
+    assert pipeline.error is None
+
+
+@patch("queue_monitor.pipeline.PersonDetector")
+def test_set_error_stores_info(mock_detector_cls, tmp_path):
+    config = AppConfig()
+    config.storage.database = str(tmp_path / "test.db")
+    mock_detector_cls.return_value = MagicMock()
+
+    pipeline = Pipeline(config)
+    try:
+        raise ValueError("boom")
+    except ValueError as exc:
+        pipeline._set_error(exc)
+
+    err = pipeline.error
+    assert err is not None
+    assert err.message == "boom"
+    assert "ValueError" in err.traceback
+    assert "boom" in err.traceback
+    assert err.timestamp  # ISO format string
+
+
+@patch("queue_monitor.pipeline.PersonDetector")
+def test_run_stores_error_on_crash(mock_detector_cls, tmp_path):
+    config = AppConfig()
+    config.storage.database = str(tmp_path / "test.db")
+    mock_detector_cls.return_value = MagicMock()
+
+    pipeline = Pipeline(config)
+
+    # Mock source to raise after open
+    mock_source = MagicMock()
+    mock_source.open.return_value = None
+    mock_source.frame_size = (1280, 720)
+    mock_source.fps = 30
+    mock_source.__iter__ = MagicMock(side_effect=RuntimeError("source failed"))
+    pipeline._source = mock_source
+
+    with pytest.raises(RuntimeError, match="source failed"):
+        pipeline.run()
+
+    assert pipeline.error is not None
+    assert pipeline.error.message == "source failed"
+    assert not pipeline.is_running

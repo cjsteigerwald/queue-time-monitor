@@ -57,3 +57,30 @@ def test_run_with_show(mock_load, mock_pipeline_cls):
 
     assert result.exit_code == 0
     mock_pipeline.run.assert_called_once_with(show_window=True)
+
+
+@patch("queue_monitor.cli.load_config")
+def test_run_web_logs_pipeline_crash(mock_load):
+    """When the pipeline thread crashes, structlog.exception should be called."""
+    cfg = MagicMock()
+    mock_load.return_value = cfg
+
+    mock_pipeline = MagicMock()
+    mock_pipeline.run.side_effect = RuntimeError("boom")
+
+    def fake_uvicorn_run(app, host, port):
+        import time
+
+        time.sleep(0.1)
+
+    with (
+        patch("queue_monitor.pipeline.Pipeline", return_value=mock_pipeline),
+        patch("queue_monitor.web.app.create_app", return_value=MagicMock()),
+        patch("uvicorn.run", side_effect=fake_uvicorn_run),
+        patch("queue_monitor.cli.logger") as mock_logger,
+    ):
+        runner.invoke(app, ["run", "--web"])
+        import time
+
+        time.sleep(0.2)
+        mock_logger.exception.assert_called_with("pipeline_crashed")

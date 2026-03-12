@@ -5,7 +5,9 @@ from __future__ import annotations
 import signal
 import threading
 import time
+import traceback as tb_mod
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 
 import cv2
 import numpy as np
@@ -22,6 +24,15 @@ from queue_monitor.storage.database import MetricsDatabase
 from queue_monitor.video.source import VideoSource
 
 logger = structlog.get_logger()
+
+
+@dataclass
+class PipelineError:
+    """Captured pipeline error info."""
+
+    message: str
+    traceback: str
+    timestamp: str
 
 
 @dataclass
@@ -62,6 +73,7 @@ class Pipeline:
     def __init__(self, config: AppConfig):
         self._config = config
         self._running = False
+        self._error: PipelineError | None = None
         self._paused = threading.Event()  # unset = not paused
         self._pause_lock = threading.Lock()
         self._source = VideoSource(config.video)
@@ -104,6 +116,11 @@ class Pipeline:
         return self._running
 
     @property
+    def error(self) -> PipelineError | None:
+        with self._pause_lock:
+            return self._error
+
+    @property
     def is_paused(self) -> bool:
         return self._paused.is_set()
 
@@ -121,6 +138,14 @@ class Pipeline:
             else:
                 self._paused.set()
             return self._paused.is_set()
+
+    def _set_error(self, exc: Exception) -> None:
+        with self._pause_lock:
+            self._error = PipelineError(
+                message=str(exc),
+                traceback="".join(tb_mod.format_exception(exc)),
+                timestamp=datetime.now(timezone.utc).isoformat(),
+            )
 
     def on_frame(self, callback) -> None:
         self._frame_callbacks.append(callback)
@@ -271,7 +296,11 @@ class Pipeline:
                 if sleep_time > 0:
                     time.sleep(sleep_time)
 
+        except Exception as exc:
+            self._set_error(exc)
+            raise
         finally:
+            self._running = False
             self._cleanup()
 
     def _handle_signal(self, signum, frame):

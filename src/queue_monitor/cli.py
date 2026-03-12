@@ -5,9 +5,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Optional
 
+import structlog
 import typer
 
 from queue_monitor.config import DEFAULT_CONFIG, load_config, save_config
+
+logger = structlog.get_logger()
 
 app = typer.Typer(
     name="queue-monitor",
@@ -58,9 +61,7 @@ def _run_with_web(cfg, show: bool) -> None:
         try:
             pipeline.run(show_window=show)
         except Exception:
-            import traceback
-
-            traceback.print_exc()
+            logger.exception("pipeline_crashed")
 
     pipeline_thread = threading.Thread(target=_run_pipeline, daemon=True)
     pipeline_thread.start()
