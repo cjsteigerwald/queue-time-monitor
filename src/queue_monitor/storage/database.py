@@ -81,6 +81,7 @@ class MetricsDatabase:
         limit: int = 1000,
     ) -> list[dict[str, Any]]:
         """Get recent metrics history."""
+        minutes = int(minutes)
         query = "SELECT * FROM metrics WHERE 1=1"
         params: list[Any] = []
 
@@ -88,7 +89,8 @@ class MetricsDatabase:
             query += " AND zone_name = ?"
             params.append(zone_name)
 
-        query += f" AND timestamp >= datetime('now', '-{minutes} minutes')"
+        query += " AND timestamp >= datetime('now', '-' || ? || ' minutes')"
+        params.append(minutes)
         query += " ORDER BY timestamp DESC LIMIT ?"
         params.append(limit)
 

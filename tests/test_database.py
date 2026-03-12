@@ -1,5 +1,7 @@
 """Tests for SQLite metrics database."""
 
+import pytest
+
 from queue_monitor.storage.database import MetricsDatabase
 
 
@@ -155,4 +157,25 @@ def test_multiple_records(tmp_path):
         _record_sample(db, count=i)
     history = db.get_history(limit=1000)
     assert len(history) == 100
+    db.close()
+
+
+def test_get_history_minutes_parameterized(tmp_path):
+    db = MetricsDatabase(str(tmp_path / "test.db"))
+    db.open()
+    _record_sample(db)
+    _record_sample(db, count=10)
+    history = db.get_history(minutes=60)
+    assert len(history) == 2
+    assert history[0]["queue_count"] == 5
+    assert history[1]["queue_count"] == 10
+    db.close()
+
+
+def test_get_history_rejects_non_integer_minutes(tmp_path):
+    db = MetricsDatabase(str(tmp_path / "test.db"))
+    db.open()
+    _record_sample(db)
+    with pytest.raises(ValueError):
+        db.get_history(minutes="1; DROP TABLE metrics")
     db.close()
