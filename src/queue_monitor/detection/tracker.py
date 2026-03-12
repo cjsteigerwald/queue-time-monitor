@@ -10,11 +10,12 @@ import supervision as sv
 class QueueTracker:
     """Track people across frames and record dwell times."""
 
-    def __init__(self):
+    def __init__(self, max_departures: int = 1000):
         self._tracker = sv.ByteTrack()
         self._entry_times: dict[int, float] = {}
         self._active_ids: set[int] = set()
         self._departed: list[float] = []  # dwell times of departed tracks
+        self._max_departures = max_departures
 
     def update(self, detections: sv.Detections) -> sv.Detections:
         """Update tracker with new detections, return tracked detections."""
@@ -34,6 +35,10 @@ class QueueTracker:
             if tid in self._entry_times:
                 dwell = now - self._entry_times.pop(tid)
                 self._departed.append(dwell)
+
+        # Cap departed list to prevent unbounded memory growth
+        if len(self._departed) > self._max_departures:
+            self._departed = self._departed[-self._max_departures :]
 
         self._active_ids = current_ids
         return tracked
