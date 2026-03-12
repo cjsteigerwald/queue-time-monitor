@@ -23,7 +23,7 @@ jobs:
 
       - name: Validate commit messages
         if: github.event_name == 'pull_request'
-        run: cz check --rev-range origin/main..HEAD
+        run: cz check --rev-range ${{ github.event.pull_request.base.sha }}..HEAD
 
       - name: Lint with ruff
         run: |
